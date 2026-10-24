@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ComputerManagement.API/ComputerManagement.API.csproj" />
+  <Project Path="ComputerManagement.Shared/ComputerManagement.Shared.csproj" />
+  <Project Path="ComputerManagement.Tests/ComputerManagement.Tests.csproj" />
+</Solution>
