@@ -1,4 +1,4 @@
-﻿namespace ComputerManagement.Shared;
+﻿namespace ComputerManagement.Shared.Computers;
 
 public enum ComputerState 
 {

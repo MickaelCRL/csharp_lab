@@ -16,6 +16,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<FleetContext>();
 
 builder.Services.AddScoped<IComputerService, ComputerService>();
+builder.Services.AddScoped<IRepairService, RepairService>();
+
+builder.Services.AddSingleton<StockService>();
 
 var app = builder.Build();
 

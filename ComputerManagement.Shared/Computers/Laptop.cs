@@ -1,12 +1,14 @@
-﻿namespace ComputerManagement.Shared;
+﻿using System.Collections;
+
+namespace ComputerManagement.Shared.Computers;
 
 public class Laptop : Computer 
 {
 	public int BatteryLevel { get; private set; }
 
-	public Laptop(string name, string brand, string processor, int ramInGb, int batteryLevel = 100)
-		: base(name, brand, processor, ramInGb) 
-	{
+	public Laptop(string name, string brand, string processor, int ramInGb, int batteryLevel = 100, int stock = 5, decimal price = 1000m)
+		: base(name, brand, processor, ramInGb, stock, price)
+    {
 		BatteryLevel = batteryLevel;
 	}
 

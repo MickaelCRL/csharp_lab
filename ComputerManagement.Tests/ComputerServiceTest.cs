@@ -1,10 +1,11 @@
 ﻿using AutoFixture.Xunit2;
-using ComputerManagement.API;
-using ComputerManagement.API.Services;
-using ComputerManagement.Shared;
 using Moq;
 using Moq.EntityFrameworkCore;
 using Shouldly;
+using ComputerManagement.API;
+using ComputerManagement.API.Services;
+using ComputerManagement.Shared.Computers;
+using ComputerManagement.Shared.Results;
 
 namespace ComputerManagement.Tests;
 
@@ -22,18 +23,21 @@ public class ComputerServiceTests
     #region Add
 
     [Theory, AutoData]
-    public void Add_ValidComputer_CreateComputer(Laptop computer)
+    public async Task AddAsync_ValidComputer_CreateComputer(Laptop computer)
     {
         // Arrange
         _fleetContextMock
             .Setup(c => c.Computers.Add(It.IsAny<Computer>()));
 
         // Act
-        _computerService.Add(computer);
+        var result = await _computerService.AddAsync(computer);
 
         // Assert
         _fleetContextMock.Verify(c => c.Computers.Add(computer), Times.Once);
-        _fleetContextMock.Verify(c => c.SaveChanges(), Times.Once);
+        _fleetContextMock.Verify(c => c.SaveChangesAsync(default), Times.Once);
+
+        result.IsSuccess.ShouldBeTrue();
+        result.Value.ShouldBe(computer);
     }
 
     #endregion
@@ -41,7 +45,7 @@ public class ComputerServiceTests
     #region Delete
 
     [Theory, AutoData]
-    public void Delete_ComputerExist_DeleteComputer(Desktop computer)
+    public async Task DeleteAsync_ComputerExist_DeleteComputer(Desktop computer)
     {
         // Arrange
         var computers = new List<Computer> { computer };
@@ -51,16 +55,17 @@ public class ComputerServiceTests
             .ReturnsDbSet(computers);
 
         // Act
-        var result = _computerService.Delete(computer.Id);
+        var result = await _computerService.DeleteAsync(computer.Id);
 
         // Assert
         _fleetContextMock.Verify(c => c.Computers.Remove(computer), Times.Once);
-        _fleetContextMock.Verify(c => c.SaveChanges(), Times.Once);
-        result.ShouldBeTrue();
+        _fleetContextMock.Verify(c => c.SaveChangesAsync(default), Times.Once);
+
+        result.IsSuccess.ShouldBeTrue();
     }
 
     [Theory, AutoData]
-    public void Delete_ComputerNotExist_ReturnFalse(Guid id)
+    public async Task DeleteAsync_ComputerNotExist_ReturnFailure(Guid id)
     {
         // Arrange
         var emptyComputersList = new List<Computer>();
@@ -70,12 +75,14 @@ public class ComputerServiceTests
             .ReturnsDbSet(emptyComputersList);
 
         // Act
-        var result = _computerService.Delete(id);
+        var result = await _computerService.DeleteAsync(id);
 
         // Assert
         _fleetContextMock.Verify(c => c.Computers.Remove(It.IsAny<Computer>()), Times.Never);
-        _fleetContextMock.Verify(c => c.SaveChanges(), Times.Never);
-        result.ShouldBeFalse();
+        _fleetContextMock.Verify(c => c.SaveChangesAsync(default), Times.Never);
+
+        result.IsSuccess.ShouldBeFalse();
+        result.Error.ShouldBe(ComputerErrors.CouldNotFoundComputerById);
     }
 
     #endregion

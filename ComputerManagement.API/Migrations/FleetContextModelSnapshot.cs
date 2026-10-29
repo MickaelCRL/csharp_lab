@@ -17,7 +17,7 @@ namespace ComputerManagement.API.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
-            modelBuilder.Entity("ComputerManagement.Shared.Computer", b =>
+            modelBuilder.Entity("ComputerManagement.Shared.Computers.Computer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,6 +36,9 @@ namespace ComputerManagement.API.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Processor")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -44,6 +47,9 @@ namespace ComputerManagement.API.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("State")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Stock")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -55,9 +61,36 @@ namespace ComputerManagement.API.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("ComputerManagement.Shared.Desktop", b =>
+            modelBuilder.Entity("ComputerManagement.Shared.Repair", b =>
                 {
-                    b.HasBaseType("ComputerManagement.Shared.Computer");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ComputerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RepairType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComputerId");
+
+                    b.ToTable("Repairs");
+                });
+
+            modelBuilder.Entity("ComputerManagement.Shared.Computers.Desktop", b =>
+                {
+                    b.HasBaseType("ComputerManagement.Shared.Computers.Computer");
 
                     b.Property<bool>("HasDualMonitor")
                         .HasColumnType("INTEGER");
@@ -65,14 +98,25 @@ namespace ComputerManagement.API.Migrations
                     b.HasDiscriminator().HasValue("desktop");
                 });
 
-            modelBuilder.Entity("ComputerManagement.Shared.Laptop", b =>
+            modelBuilder.Entity("ComputerManagement.Shared.Computers.Laptop", b =>
                 {
-                    b.HasBaseType("ComputerManagement.Shared.Computer");
+                    b.HasBaseType("ComputerManagement.Shared.Computers.Computer");
 
                     b.Property<int>("BatteryLevel")
                         .HasColumnType("INTEGER");
 
                     b.HasDiscriminator().HasValue("laptop");
+                });
+
+            modelBuilder.Entity("ComputerManagement.Shared.Repair", b =>
+                {
+                    b.HasOne("ComputerManagement.Shared.Computers.Computer", "Computer")
+                        .WithMany()
+                        .HasForeignKey("ComputerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Computer");
                 });
 #pragma warning restore 612, 618
         }

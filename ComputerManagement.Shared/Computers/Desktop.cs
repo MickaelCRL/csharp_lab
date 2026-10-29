@@ -1,11 +1,13 @@
-﻿namespace ComputerManagement.Shared;
+﻿using System.Collections;
+
+namespace ComputerManagement.Shared.Computers;
 
 public class Desktop : Computer 
 {
 	public bool HasDualMonitor { get; private set; }
 
-	public Desktop(string name, string brand, string processor, int ramInGb, bool hasDualMonitor = false)
-		: base(name, brand, processor, ramInGb) 
+	public Desktop(string name, string brand, string processor, int ramInGb, bool hasDualMonitor = false, int stock = 5, decimal price = 1000m)
+		: base(name, brand, processor, ramInGb, stock, price) 
 	{
 		HasDualMonitor = hasDualMonitor;
 	}

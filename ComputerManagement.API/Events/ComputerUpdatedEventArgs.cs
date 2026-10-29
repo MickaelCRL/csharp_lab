@@ -1,4 +1,4 @@
-﻿using ComputerManagement.Shared;
+﻿using ComputerManagement.Shared.Computers;
 
 namespace ComputerManagement.API.Events;
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ComputerManagement.Shared;
 using ComputerManagement.API.Services;
+using ComputerManagement.Shared.Computers;
+using ComputerManagement.Shared.Results;
 
 namespace ComputerManagement.API.Controllers;
 
@@ -30,62 +31,134 @@ public class ComputersController : ControllerBase
 
     // GET /api/computers
     [HttpGet]
-    public ActionResult<IEnumerable<Computer>> GetAll()
+    public async Task<ActionResult<IEnumerable<Computer>>> GetAll()
     {
         _logger.LogInformation("Getting all computers");
-        return Ok(_computerService.GetAll());
+        var result = await _computerService.GetAllAsync();
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
+    }
+
+    // GET /api/computers/available
+    [HttpGet("available")]
+    public async Task<ActionResult<IEnumerable<Computer>>> GetAvailable()
+    {
+        _logger.LogInformation("Getting available computers (Stock > 0).");
+        var result = await _computerService.GetAvailableAsync();
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
+    }
+
+    // GET /api/computers/sorted-by-price
+    [HttpGet("sorted-by-price")]
+    public async Task<ActionResult<IEnumerable<Computer>>> GetOrderedByPriceDesc()
+    {
+        _logger.LogInformation("Getting computers ordered by price descending.");
+        var result = await _computerService.GetOrderedByPriceDescAsync();
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 
     // GET /api/computers/{id}
     [HttpGet("{id:guid}")]
-    public ActionResult<Computer> GetComputerById(Guid id)
+    public async Task<ActionResult<Computer>> GetComputerById(Guid id)
     {
-        _logger.LogInformation("Getting computer with ID {Id}", id);
-        var computer = _computerService.GetById(id);
-        if (computer == null) return NotFound();
+        _logger.LogInformation("Getting computer with ID: {Id}", id);
+        var result = await _computerService.GetByIdAsync(id);
 
-        return Ok(computer);
+        if (result.IsSuccess)
+        {
+            var computer = result.Value;
+            return Ok(computer);
+        }
+
+        if (result.Error == ComputerErrors.CouldNotFoundComputerById)
+            return NotFound();
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 
     // POST /api/computers
     [HttpPost]
-    public ActionResult Add([FromBody] Computer computer)
+    public async Task<ActionResult<Computer>> Add([FromBody] Computer computer)
     {
         _logger.LogInformation("Adding a new computer with ID {Id}", computer.Id);
-        _computerService.Add(computer);
-        return CreatedAtAction(nameof(GetComputerById), new { id = computer.Id }, computer);
+        var result = await _computerService.AddAsync(computer);
+        
+        if (result.IsSuccess)
+        {
+            var computerCreated = result.Value;
+            return CreatedAtAction(nameof(GetComputerById), new { id = computerCreated.Id }, computerCreated);
+        }
+        
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 
     // PUT /api/computers/{id}
     [HttpPut("{id:guid}")]
-    public ActionResult Update(Guid id, [FromBody] Computer computer)
+    public async Task<ActionResult<Computer>> Update(Guid id, [FromBody] Computer computer)
     {
         if (id != computer.Id) return BadRequest();
 
         _logger.LogInformation("Updating computer with ID {Id}", id);
-        var updated = _computerService.Update(id, computer);
-        if (!updated) return NotFound();
+        var result = await _computerService.UpdateAsync(id, computer);
 
-        return Ok(computer);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        if (result.Error == ComputerErrors.CouldNotFoundComputerById)
+            return NotFound();
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 
     // DELETE /api/computers/{id}
     [HttpDelete("{id:guid}")]
-    public ActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         _logger.LogInformation("Deleting computer with ID {Id}", id);
-        var deleted = _computerService.Delete(id);
-        if (!deleted) return NotFound();
+        var result = await _computerService.DeleteAsync(id);
 
-        return NoContent();
+        if (result.IsSuccess)
+        {
+            return NoContent();
+        }
+
+        if (result.Error == ComputerErrors.CouldNotFoundComputerById)
+            return NotFound();
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 
     // GET /api/computers/brand/{brand}
     [HttpGet("brand/{brand}")]
-    public ActionResult<IEnumerable<Computer>> GetByBrand(string brand)
+    public async Task<ActionResult<IEnumerable<Computer>>> GetByBrand(string brand)
     {
-		_logger.LogInformation("Getting computers by brand: {Brand}", brand);
-		var computers = _computerService.GetByBrand(brand);
-        return Ok(computers);
+        _logger.LogInformation("Getting computers by brand: {Brand}", brand);
+        var result = await _computerService.GetByBrandAsync(brand);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+
+        return Problem(statusCode: StatusCodes.Status500InternalServerError);
     }
 }

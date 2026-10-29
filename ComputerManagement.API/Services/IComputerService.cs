@@ -1,5 +1,6 @@
 ﻿using ComputerManagement.API.Events;
-using ComputerManagement.Shared;
+using ComputerManagement.Shared.Computers;
+using ComputerManagement.Shared.Results;
 
 namespace ComputerManagement.API.Services;
 
@@ -9,10 +10,12 @@ public interface IComputerService
     event EventHandler<ComputerUpdatedEventArgs> ComputerUpdated;
     event EventHandler<ComputerDeletedEventArgs> ComputerDeleted;
 
-    IEnumerable<Computer> GetAll();
-	Computer? GetById(Guid id);
-	void Add(Computer computer);
-	bool Update(Guid id, Computer updatedComputer);
-	bool Delete(Guid id);
-	IEnumerable<Computer> GetByBrand(string brand);
+    Task<Result<IEnumerable<Computer>>> GetAllAsync();
+    Task<Result<IEnumerable<Computer>>> GetAvailableAsync();
+    Task<Result<IEnumerable<Computer>>> GetByBrandAsync(string brand);
+    Task<Result<IEnumerable<Computer>>> GetOrderedByPriceDescAsync();
+    Task<Result<Computer>> GetByIdAsync(Guid id);
+    Task<Result<Computer>> AddAsync(Computer computer);
+    Task<Result<Computer>> UpdateAsync(Guid id, Computer updatedComputer);
+    Task<Result> DeleteAsync(Guid id);
 }
